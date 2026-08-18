@@ -1261,6 +1261,12 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
 		desc: "Caps stats at 654 after a positive nature, or 655 after a negative nature",
 		// Implemented in sim/battle.ts
 	},
+	declineactionmod: {
+		effectType: 'Rule',
+		name: 'Decline Action Mod',
+		desc: "Allows a side to voluntarily decline to act with an active Pokémon on a turn (no move, no switch, nothing happens), even if it has legal moves or switches available.",
+		// Implemented in sim/side.ts
+	},
 	openteamsheets: {
 		effectType: 'Rule',
 		name: 'Open Team Sheets',

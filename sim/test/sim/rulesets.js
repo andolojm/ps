@@ -22,6 +22,7 @@ describe('Rulesets', function () {
 			'Timeout Auto Choose', 'Timer Accelerate', 'Timer Add Per Turn', 'Timer Grace',
 			'Timer Max First Turn', 'Timer Max Per Turn', 'Guaranteed Secondary Mod',
 			'Full Arceus Clause', 'Beat Up Nicknames Mod', 'Force Open Team Sheets',
+			'Decline Action Mod',
 		]);
 
 		for (const format of Dex.formats.formatsListCache) {

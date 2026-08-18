@@ -123,6 +123,10 @@ Pokémon Showdown's `sim/` directory has been modified in the following ways:
   added** for what Pokémon Showdown calls `Pokedex` and `TypeChart` respectively. However, it is
   important to **note that the types in `@pkmn/sim` do not match the stricter `@pkmn/dex-types`**
   directly, you must simply cast the `@pkmn/sim` `Dex` and trust that it will work.
+- **a new opt-in `decline` choice has been added**, letting a side voluntarily submit an empty turn
+  for an active Pokémon (no move, no PP spent) even when a legal move/switch is available. It has no
+  effect unless a format's ruleset includes the `Decline Action Mod` rule. See
+  [`DECLINE_ACTION.md`](DECLINE_ACTION.md) for full details.
 - **`DexConditions` has been modified to behave like the client (and `@pkmn/dex`)**. If an effect
   is prefixed with a type (e.g. `'move: ...'`) then the type will be used to determine which API
   to search. The two differences with Pokémon Showdown's simulator is that the input is more lenient

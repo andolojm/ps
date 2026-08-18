@@ -41,7 +41,7 @@ import { toID } from './dex';
 
 /** A single action that can be chosen. Choices will have one Action for each pokemon. */
 export interface ChosenAction {
-	choice: 'move' | 'switch' | 'instaswitch' | 'revivalblessing' | 'team' | 'shift' | 'pass';// action type
+	choice: 'move' | 'switch' | 'instaswitch' | 'revivalblessing' | 'team' | 'shift' | 'pass' | 'decline';// action type
 	pokemon?: Pokemon; // the pokemon doing the action
 	targetLoc?: number; // relative location of the target to pokemon (move action only)
 	moveid?: string; // a move to use (move action only)
@@ -1262,6 +1262,10 @@ export class Side {
 				if (data) return this.emitChoiceError(`Unrecognized data after "pass": ${data}`);
 				if (!this.choosePass()) return false;
 				break;
+			case 'decline':
+				if (data) return this.emitChoiceError(`Unrecognized data after "decline": ${data}`);
+				if (!this.chooseDecline()) return false;
+				break;
 			case 'auto':
 			case 'default':
 				if (!this.autoChoose()) return false;
@@ -1327,6 +1331,41 @@ export class Side {
 
 		this.choice.actions.push({
 			choice: 'pass',
+		});
+		return true;
+	}
+
+	/**
+	 * Voluntarily decline to act with the next Pokémon this turn: no move,
+	 * no PP spent, nothing happens. Unlike `pass`, this is legal even when
+	 * the Pokémon has a legal move or switch available. Only usable when
+	 * the format's ruleset explicitly allows it.
+	 *
+	 * Declining is blocked while the Pokémon is hard-locked into a move
+	 * (Recharge, Bide, Rollout, etc. — see `Pokemon#getLockedMove`), since
+	 * those aren't real discretionary choices. It's allowed while
+	 * asleep/frozen; because the sleep/freeze counters only advance inside
+	 * `runMove`, declining leaves them unchanged for that turn rather than
+	 * progressing them.
+	 */
+	chooseDecline(): boolean | Side {
+		if (this.requestState !== 'move') {
+			return this.emitChoiceError(`Can't decline: Not a move request`);
+		}
+		if (!this.battle.ruleTable.has('declineactionmod')) {
+			return this.emitChoiceError(`Can't decline: This format doesn't allow declining to act`);
+		}
+		const index = this.getChoiceIndex();
+		if (index >= this.active.length) return false;
+		const pokemon: Pokemon = this.active[index];
+
+		if (pokemon.getLockedMove()) {
+			return this.emitChoiceError(`Can't decline: Your ${pokemon.name} must continue its move`);
+		}
+
+		this.choice.actions.push({
+			choice: 'decline',
+			pokemon,
 		});
 		return true;
 	}

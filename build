@@ -28,7 +28,7 @@ const rewrite = async (result, name, pkg, suffix = '') => {
     `${preamble}${pkg}=${decoded.slice(start.length, -2)}${suffix};`);
 };
 
-const sh = (cmd, args) => child_process.execFileSync(cmd, args, {encoding: 'utf8', cwd});
+const sh = (cmd, args) => child_process.execSync(cmd, args, {encoding: 'utf8', cwd});
 
 const mkconfig = (tsconfig, format) => {
   tsconfig.compilerOptions.noEmit = false;

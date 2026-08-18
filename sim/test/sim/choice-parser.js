@@ -385,5 +385,72 @@ describe('Choice parser', () => {
 				}
 			});
 		});
+
+		describe('Decline choices', () => {
+			it('should reject `decline` choices by default', () => {
+				battle = common.createBattle([[
+					{ species: "Mew", ability: 'synchronize', moves: ['recover'] },
+				], [
+					{ species: "Rhydon", ability: 'prankster', moves: ['splash'] },
+				]]);
+
+				assert.throws(() => battle.choose('p1', 'decline'));
+			});
+
+			it('should accept `decline` choices when the format allows it', () => {
+				battle = common.createBattle({ customRules: ['Decline Action Mod'] }, [[
+					{ species: "Mew", ability: 'synchronize', moves: ['recover'] },
+				], [
+					{ species: "Rhydon", ability: 'prankster', moves: ['splash'] },
+				]]);
+				const mewPP = battle.p1.active[0].moveSlots[0].pp;
+
+				assert(battle.choose('p1', 'decline'));
+				battle.choose('p2', 'move splash');
+
+				assert.false(battle.log.some(line => line.startsWith('|move|p1a')));
+				assert.equal(battle.p1.active[0].moveSlots[0].pp, mewPP);
+				assert(battle.log.some(line => line.startsWith('|move|p2a')));
+			});
+
+			it('should accept mixed `decline` and `move` choices in doubles', () => {
+				battle = common.createBattle({ gameType: 'doubles', customRules: ['Decline Action Mod'] }, [[
+					{ species: "Skarmory", ability: 'sturdy', moves: ['roost'] },
+					{ species: "Aggron", ability: 'sturdy', moves: ['irondefense'] },
+				], [
+					{ species: "Rhydon", ability: 'prankster', moves: ['splash'] },
+					{ species: "Ekans", ability: 'shedskin', moves: ['wrap'] },
+				]]);
+
+				assert(battle.choose('p1', 'decline, move irondefense'));
+				assert.equal(battle.p1.getChoice(), `decline, move irondefense`);
+			});
+
+			it('should reject `decline` while hard-locked into a move', () => {
+				battle = common.createBattle({ customRules: ['Decline Action Mod'] }, [[
+					{ species: 'snorlax', ability: 'noguard', moves: ['hyperbeam', 'tackle'] },
+				], [
+					{ species: 'alakazam', moves: ['substitute'] },
+				]]);
+				battle.makeChoices();
+
+				assert.throws(() => battle.choose('p1', 'decline'));
+			});
+
+			it('should leave the sleep counter unchanged when declining', () => {
+				battle = common.createBattle({ customRules: ['Decline Action Mod'] }, [[
+					{ species: 'snorlax', moves: ['splash'] },
+				], [
+					{ species: 'rhydon', moves: ['splash'] },
+				]]);
+				battle.p1.active[0].setStatus('slp');
+
+				for (let i = 0; i < 3; i++) {
+					battle.choose('p1', 'decline');
+					battle.choose('p2', 'move splash');
+					assert.equal(battle.p1.active[0].status, 'slp');
+				}
+			});
+		});
 	});
 });
